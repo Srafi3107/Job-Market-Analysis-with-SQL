@@ -1,5 +1,3 @@
-##Job Market Analysis with SQL
-
 ## Project Overview
 
 This project explores the data analyst job market using SQL. The goal is to identify high-paying jobs, in-demand skills, and the best skills to learn for career growth.
