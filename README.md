@@ -1,160 +1,211 @@
-Driven by a quest to navigate the data analyst job market more effectively, this project was born from a desire to pinpoint top-paid and in-demand skills, streamlining others work to find optimal jobs.
+# Data Analyst Job Market Analysis with SQL
 
-The questions I wanted to answer through my SQL queries were:
+## Project Overview
 
-    What are the top-paying data analyst jobs?
-    What skills are required for these top-paying jobs?
-    What skills are most in demand for data analysts?
-    Which skills are associated with higher salaries?
-    What are the most optimal skills to learn?
+This project explores the data analyst job market using SQL. The goal is to identify high-paying jobs, in-demand skills, and the best skills to learn for career growth.
 
-Tools I Used
+By analyzing job posting data, I answered the following questions:
 
-For my deep dive into the data analyst job market, I harnessed the power of several key tools:
+* What are the highest-paying Data Analyst jobs?
+* What skills are required for those jobs?
+* What skills are most in demand?
+* Which skills offer the highest salaries?
+* What are the best skills to learn based on both demand and salary?
 
-    SQL: The backbone of my analysis, allowing me to query the database and unearth critical insights.
-    Visual Studio Code: My go-to for database management and executing SQL queries.
-    Git & GitHub: Essential for version control and sharing my SQL scripts and analysis, ensuring collaboration and project tracking.
+---
 
-The Analysis
-1. Top Paying Data Analyst Jobs
+## Tools Used
 
-To identify the highest-paying roles, I filtered data analyst positions by average yearly salary and location, focusing on remote jobs. This query highlights the high paying opportunities in the field.
+### SQL
 
-SELECT	
-	job_id,
-	job_title,
-	job_location,
-	job_schedule_type,
-	salary_year_avg,
-	job_posted_date,
+Used to query and analyze the job market dataset.
+
+### Visual Studio Code
+
+Used for writing and running SQL queries.
+
+### Git & GitHub
+
+Used for version control and sharing the project.
+
+---
+
+# Analysis
+
+## 1. Top-Paying Data Analyst Jobs
+
+To find the highest-paying remote Data Analyst positions, I filtered jobs with available salary information and sorted them by average yearly salary.
+
+```sql
+SELECT
+    job_id,
+    job_title,
+    job_location,
+    job_schedule_type,
+    salary_year_avg,
+    job_posted_date,
     name AS company_name
-FROM
-    job_postings_fact
-LEFT JOIN company_dim ON job_postings_fact.company_id = company_dim.company_id
+FROM job_postings_fact
+LEFT JOIN company_dim
+    ON job_postings_fact.company_id = company_dim.company_id
 WHERE
-    job_title_short = 'Data Analyst' AND 
-    job_location = 'Anywhere' AND 
-    salary_year_avg IS NOT NULL
-ORDER BY
-    salary_year_avg DESC
+    job_title_short = 'Data Analyst'
+    AND job_location = 'Anywhere'
+    AND salary_year_avg IS NOT NULL
+ORDER BY salary_year_avg DESC
 LIMIT 10;
+```
 
+### Key Insight
 
-2. Skills for Top Paying Jobs
+Remote Data Analyst roles can offer very competitive salaries, especially in large technology and data-focused companies.
 
-To understand what skills are required for the top-paying jobs, I joined the job postings with the skills data, providing insights into what employers value for high-compensation roles.
+---
 
+## 2. Skills Required for Top-Paying Jobs
+
+To understand which skills employers expect from highly paid Data Analysts, I matched the top-paying jobs with their required skills.
+
+```sql
 WITH top_paying_jobs AS (
-    SELECT	
+    SELECT
         job_id,
         job_title,
         salary_year_avg,
         name AS company_name
-    FROM
-        job_postings_fact
-    LEFT JOIN company_dim ON job_postings_fact.company_id = company_dim.company_id
+    FROM job_postings_fact
+    LEFT JOIN company_dim
+        ON job_postings_fact.company_id = company_dim.company_id
     WHERE
-        job_title_short = 'Data Analyst' AND 
-        job_location = 'Anywhere' AND 
-        salary_year_avg IS NOT NULL
-    ORDER BY
-        salary_year_avg DESC
+        job_title_short = 'Data Analyst'
+        AND job_location = 'Anywhere'
+        AND salary_year_avg IS NOT NULL
+    ORDER BY salary_year_avg DESC
     LIMIT 10
 )
 
-SELECT 
+SELECT
     top_paying_jobs.*,
     skills
 FROM top_paying_jobs
-INNER JOIN skills_job_dim ON top_paying_jobs.job_id = skills_job_dim.job_id
-INNER JOIN skills_dim ON skills_job_dim.skill_id = skills_dim.skill_id
-ORDER BY
-    salary_year_avg DESC;
+INNER JOIN skills_job_dim
+    ON top_paying_jobs.job_id = skills_job_dim.job_id
+INNER JOIN skills_dim
+    ON skills_job_dim.skill_id = skills_dim.skill_id
+ORDER BY salary_year_avg DESC;
+```
 
+### Key Insight
 
-3. In-Demand Skills for Data Analysts
+Top-paying jobs usually require a combination of SQL, Python, cloud technologies, and business intelligence tools.
 
-This query helped identify the skills most frequently requested in job postings, directing focus to areas with high demand.
+---
 
-SELECT 
+## 3. Most In-Demand Skills
+
+This query identifies the skills that appear most frequently in remote Data Analyst job postings.
+
+```sql
+SELECT
     skills,
     COUNT(skills_job_dim.job_id) AS demand_count
 FROM job_postings_fact
-INNER JOIN skills_job_dim ON job_postings_fact.job_id = skills_job_dim.job_id
-INNER JOIN skills_dim ON skills_job_dim.skill_id = skills_dim.skill_id
+INNER JOIN skills_job_dim
+    ON job_postings_fact.job_id = skills_job_dim.job_id
+INNER JOIN skills_dim
+    ON skills_job_dim.skill_id = skills_dim.skill_id
 WHERE
-    job_title_short = 'Data Analyst' 
-    AND job_work_from_home = True 
-GROUP BY
-    skills
-ORDER BY
-    demand_count DESC
+    job_title_short = 'Data Analyst'
+    AND job_work_from_home = TRUE
+GROUP BY skills
+ORDER BY demand_count DESC
 LIMIT 5;
+```
 
+### Top 5 Most In-Demand Skills
 
+| Skill    | Demand Count |
+| -------- | ------------ |
+| SQL      | 7,291        |
+| Excel    | 4,611        |
+| Python   | 4,330        |
+| Tableau  | 3,745        |
+| Power BI | 2,609        |
 
-Skills 	Demand Count
-SQL 	7291
-Excel 	4611
-Python 	4330
-Tableau 	3745
-Power BI 	2609
+### Key Insight
 
-4. Skills Based on Salary
+SQL remains the most requested skill for Data Analysts, followed by Excel, Python, Tableau, and Power BI.
 
-Exploring the average salaries associated with different skills revealed which skills are the highest paying.
+---
 
-SELECT 
+## 4. Highest-Paying Skills
+
+This analysis calculates the average salary associated with each skill.
+
+```sql
+SELECT
     skills,
     ROUND(AVG(salary_year_avg), 0) AS avg_salary
 FROM job_postings_fact
-INNER JOIN skills_job_dim ON job_postings_fact.job_id = skills_job_dim.job_id
-INNER JOIN skills_dim ON skills_job_dim.skill_id = skills_dim.skill_id
+INNER JOIN skills_job_dim
+    ON job_postings_fact.job_id = skills_job_dim.job_id
+INNER JOIN skills_dim
+    ON skills_job_dim.skill_id = skills_dim.skill_id
 WHERE
     job_title_short = 'Data Analyst'
     AND salary_year_avg IS NOT NULL
-    AND job_work_from_home = True 
-GROUP BY
-    skills
-ORDER BY
-    avg_salary DESC
+    AND job_work_from_home = TRUE
+GROUP BY skills
+ORDER BY avg_salary DESC
 LIMIT 25;
+```
 
+### Key Insight
 
-5. Most Optimal Skills to Learn
+Skills related to cloud platforms, big data, and programming languages generally offer higher salaries than traditional reporting tools.
 
-Combining insights from demand and salary data, this query aimed to pinpoint skills that are both in high demand and have high salaries, offering a strategic focus for skill development.
+---
 
-SELECT 
+## 5. Best Skills to Learn
+
+To find the most valuable skills, I combined salary and demand data.
+
+```sql
+SELECT
     skills_dim.skill_id,
     skills_dim.skills,
     COUNT(skills_job_dim.job_id) AS demand_count,
     ROUND(AVG(job_postings_fact.salary_year_avg), 0) AS avg_salary
 FROM job_postings_fact
-INNER JOIN skills_job_dim ON job_postings_fact.job_id = skills_job_dim.job_id
-INNER JOIN skills_dim ON skills_job_dim.skill_id = skills_dim.skill_id
+INNER JOIN skills_job_dim
+    ON job_postings_fact.job_id = skills_job_dim.job_id
+INNER JOIN skills_dim
+    ON skills_job_dim.skill_id = skills_dim.skill_id
 WHERE
     job_title_short = 'Data Analyst'
     AND salary_year_avg IS NOT NULL
-    AND job_work_from_home = True 
-GROUP BY
-    skills_dim.skill_id
-HAVING
-    COUNT(skills_job_dim.job_id) > 10
-ORDER BY
-    avg_salary DESC,
-    demand_count DESC
+    AND job_work_from_home = TRUE
+GROUP BY skills_dim.skill_id
+HAVING COUNT(skills_job_dim.job_id) > 10
+ORDER BY avg_salary DESC, demand_count DESC
 LIMIT 25;
+```
 
-Skill ID 	Skills 	Demand Count 	Average Salary ($)
-8 	go 	27 	115,320
-234 	confluence 	11 	114,210
-97 	hadoop 	22 	113,193
-80 	snowflake 	37 	112,948
-74 	azure 	34 	111,225
-77 	bigquery 	13 	109,654
-76 	aws 	32 	108,317
-4 	java 	17 	106,906
-194 	ssis 	12 	106,683
-233 	jira 	20 	104,918
+### Top Skills Based on Salary and Demand
+
+| Skill      | Demand Count | Average Salary ($) |
+| ---------- | ------------ | ------------------ |
+| Go         | 27           | 115,320            |
+| Confluence | 11           | 114,210            |
+| Hadoop     | 22           | 113,193            |
+| Snowflake  | 37           | 112,948            |
+| Azure      | 34           | 111,225            |
+| BigQuery   | 13           | 109,654            |
+| AWS        | 32           | 108,317            |
+| Java       | 17           | 106,906            |
+| SSIS       | 12           | 106,683            |
+| Jira       | 20           | 104,918            |
+
+
+
+=
